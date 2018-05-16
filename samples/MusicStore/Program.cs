@@ -1,7 +1,7 @@
 using System;
 using System.IO;
+using Scenarios;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Server.HttpSys;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -11,8 +11,10 @@ namespace MusicStore
     {
         public static void Main(string[] args)
         {
+            var scenarios = ScenariosHelper.Start();
+
             var config = new ConfigurationBuilder()
-                .AddCommandLine(args)
+                .AddCommandLine(Array.Empty<string>())
                 .AddEnvironmentVariables(prefix: "ASPNETCORE_")
                 .Build();
 
@@ -21,50 +23,23 @@ namespace MusicStore
                 .UseConfiguration(config)
                 .UseIISIntegration()
                 .UseStartup("MusicStore")
-                .UseDefaultServiceProvider((context, options) => {
-                    options.ValidateScopes = true;
-                });
-
-            var environment = builder.GetSetting("environment") ??
-                    Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-
-            if (string.Equals(builder.GetSetting("server"), "Microsoft.AspNetCore.Server.HttpSys", System.StringComparison.Ordinal))
-            {
-                if (string.Equals(environment, "NtlmAuthentication", System.StringComparison.Ordinal))
+                .ConfigureLogging(factory =>
                 {
-                    // Set up NTLM authentication for WebListener like below.
-                    // For IIS and IISExpress: Use inetmgr to setup NTLM authentication on the application vDir or
-                    // modify the applicationHost.config to enable NTLM.
-                    builder.UseHttpSys(options =>
-                    {
-                        options.Authentication.Schemes = AuthenticationSchemes.NTLM;
-                        options.Authentication.AllowAnonymous = false;
-                    });
-                }
-                else
-                {
-                    builder.UseHttpSys();
-                }
-            }
-            else
-            {
-                builder.UseKestrel();
-            }
-
-            builder.ConfigureLogging(factory =>
-            {
-                factory.AddConsole();
-
-                var logLevel = string.Equals(environment, "Development", StringComparison.Ordinal) ? LogLevel.Information : LogLevel.Warning;
-                factory.SetMinimumLevel(logLevel);
-
-                // Turn off Info logging for EF commands
-                factory.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Warning);
-            });
+                    factory.AddConsole();
+                    factory.AddFilter((provider,category, level) => level >= LogLevel.Warning);
+                })
+                .UseKestrel();
 
             var host = builder.Build();
 
-            host.Run();
+            host.Start();
+
+            scenarios.LogStartup();
+
+            scenarios.PerformHttpRequests("http://localhost:5000", args, 
+                threshholds: new int[] { 100, 250, 500, 750, 1000, 1500, 2000, 3000, 5000, 10000 });
+            
+            scenarios.VerifyLibraryLocation();
         }
     }
 }

@@ -65,8 +65,6 @@ namespace MusicStore
                 });
             });
 
-            services.AddLogging();
-
             // Add MVC services to the services container
             services.AddMvc();
 
