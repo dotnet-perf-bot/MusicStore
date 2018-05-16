@@ -1,55 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
-
+  <Import Project="..\..\harness\common.props" />
+  <Import Project="..\..\harness\webapp.props" />
   <PropertyGroup>
     <Description>Music store application on ASP.NET Core</Description>
-    <TargetFrameworks>netcoreapp2.2;net461</TargetFrameworks>
+    <TargetFramework>$(JITBENCH_TARGET_FRAMEWORK_MONIKER)</TargetFramework>
+    <TargetFramework Condition="'$(TargetFramework)'==''">netcoreapp2.0</TargetFramework>
     <DefineConstants>$(DefineConstants);DEMO</DefineConstants>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <RuntimeIdentifiers Condition="'$(Configuration)' != 'RuntimeStore'">win7-x86;win7-x64;linux-x64;osx-x64</RuntimeIdentifiers>
-    <Configurations>Debug;Release;RuntimeStore</Configurations>
-    <DebugType Condition="'$(TargetFramework)' == 'net461'">full</DebugType>
+    <WarningsAsErrors>true</WarningsAsErrors>
+    <PreserveCompilationContext>true</PreserveCompilationContext>
+    <AssemblyName>MusicStore</AssemblyName>
+    <OutputType>Exe</OutputType>
   </PropertyGroup>
-
+  
   <ItemGroup>
-    <Content Update="ForTesting\**\*" CopyToPublishDirectory="Never" Condition=" '$(PublishForTesting)' != 'true' " />
+    <Compile Include="..\..\harness\ScenariosHelper.cs" Link="ScenariosHelper.cs" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
-    <PackageReference Include="Microsoft.AspNetCore.AspNetCoreModule" Version="$(MicrosoftAspNetCoreAspNetCoreModulePackageVersion)" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)'=='.NETCoreApp' AND '$(Configuration)' == 'RuntimeStore' ">
-    <PackageReference Include="Microsoft.AspNetCore.All" Version="$(MicrosoftAspNetCoreAllPackageVersion)" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)'=='.NETFramework' OR '$(Configuration)' != 'RuntimeStore' ">
-    <PackageReference Include="Microsoft.AspNetCore" Version="$(MicrosoftAspNetCorePackageVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="$(MicrosoftAspNetCoreAuthenticationCookiesPackageVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.Facebook" Version="$(MicrosoftAspNetCoreAuthenticationFacebookPackageVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="$(MicrosoftAspNetCoreAuthenticationGooglePackageVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.MicrosoftAccount" Version="$(MicrosoftAspNetCoreAuthenticationMicrosoftAccountPackageVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="$(MicrosoftAspNetCoreAuthenticationOpenIdConnectPackageVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.Twitter" Version="$(MicrosoftAspNetCoreAuthenticationTwitterPackageVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="$(MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="$(MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="$(MicrosoftAspNetCoreMvcPackageVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.ViewCompilation" PrivateAssets="All" Version="$(MicrosoftAspNetCoreMvcRazorViewCompilationPackageVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Server.HttpSys" Version="$(MicrosoftAspNetCoreServerHttpSysPackageVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Session" Version="$(MicrosoftAspNetCoreSessionPackageVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="$(MicrosoftAspNetCoreStaticFilesPackageVersion)" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="$(MicrosoftEntityFrameworkCoreInMemoryPackageVersion)" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(MicrosoftEntityFrameworkCoreSqlServerPackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="$(MicrosoftExtensionsConfigurationCommandLinePackageVersion)" />
-    <PackageReference Include="Microsoft.NET.Sdk.Razor" Version="$(MicrosoftNETSdkRazorPackageVersion)" PrivateAssets="All" />
-  </ItemGroup>
-
-  <Target Name="VerifyPrecompiledViews" AfterTargets="Publish">
-    <Error Text="Did not use Razor Sdk to compile views. Actual $(ResolvedRazorCompileToolset)" Condition="'$(ResolvedRazorCompileToolset)' != 'RazorSdk'" />
-
-    <PropertyGroup>
-        <ExpectedViewOutput>$(PublishDir)$(RazorTargetName).dll</ExpectedViewOutput>
-    </PropertyGroup>
-
-    <Error Text="Did not precompiled view binary '$(ExpectedViewOutput)'" Condition="!Exists('$(ExpectedViewOutput)')" />
-  </Target>
 </Project>
